@@ -1,0 +1,65 @@
+# FDS Kaggle submission reproducer
+
+This folder is a self-contained public repository payload for reproducing the three selected FDS competition submissions. It contains the feature-extraction source modules, the full-training fitted model artifacts, a runner, and a Kaggle notebook that clones this repository and writes one CSV per recipe.
+
+## Selected recipes
+
+All three are equal-weight soft-voting blends of CatBoost, XGBoost, and Logistic Regression. `battle_id` is used only to align output rows and never enters a predictor. Each output has the competition schema `battle_id,player_won`, 5,000 rows, and threshold 0.5.
+
+| Recipe | CatBoost additions | XGBoost additions | Logistic Regression additions | Reported leaderboard score | Model feature counts (Cat / XGB / LR) | Expected CSV SHA-256 |
+|---|---|---|---|---:|---:|---|
+| `c09` | None beyond C09 | None beyond C09 | None beyond C09 | 0.69333 | 80 / 142 / 143 | `4d460eec5d89b503b0133c8b715847bd38d6e33d4602450c91cffcc2c3dfc1a1` |
+| `v334_highest_mean` | F02, F04, N02, N03, N04 | None | F02, N03 | 0.69266 | 86 / 142 / 145 | `327817d8ef0e8b14456578a1de8f92e077d98231747f8200ad632422abf6bcd4` |
+| `v334_r_both` | F02, F04, N02, N03, N04 | F02, N01, N02, N03 | None | 0.68933 (latest project registry) | 86 / 146 / 143 | `f186c18f3e7d957993948a2feb0da0c9de122f3cc41d4f79f47f034c82fc486d` |
+
+The latest project registry corrects V334 R_BOTH to 0.68933 and assigns 0.698 to the different V337 CatBoost F06 P1+P2 recipe. The original user selection called R_BOTH 0.698; that label is retained separately in the manifest for provenance. This package reproduces the requested R_BOTH recipe and its exact CSV hash. Leaderboard scores are user-reported and have not been independently verified on Kaggle.
+
+## What the notebook does
+
+1. Clones this public GitHub repository. Set `REPOSITORY_URL` in the notebook to the URL created for this folder.
+2. Finds the attached competition files in `/kaggle/input`.
+3. Installs the pinned Python packages listed in `requirements.txt`.
+4. Rebuilds the exact model-specific feature matrices from the 10,000 labeled training rows and the first 30 visible timeline snapshots of each test battle.
+5. Loads the saved estimators, predicts the test rows, and writes `submission.csv`, component probabilities, and metadata for each recipe under `/kaggle/working/submissions/`.
+6. Checks each output against its recorded SHA-256 and fails if the CSV bytes differ from the selected source file.
+
+The default mode loads the models already refitted on all 10,000 labeled rows. The optional `--refit-models` flag clones those estimators and trains them again on all 10,000 rows before prediction. The frozen-artifact mode is the recommended mode when the goal is to reproduce the exact selected CSV bytes; the refit mode is provided to make the training step executable and can differ across Python/library environments. Both modes stop with an error if the generated CSV hash differs from the selected source submission.
+
+The script reads the test records only to create features and predictions. It rejects a `player_won` field in test records, never uses test labels, and writes predictions in `sample_submission.csv` order. The source modules needed for the original feature recipes are included under `src/` and `personal_model_2/`. The PM2 helper computes only the six columns consumed by C09; its values were checked against the historical extractor on 60 training and 60 test rows. Unused experiment-time type feature code is excluded.
+
+## Run locally
+
+Python 3.12 or newer is required. The verified local environment uses Python 3.14.8. A GPU is not required.
+
+From this folder, with the challenge files in `../data/`:
+
+```bash
+python -m pip install -r requirements.txt
+python run_submissions.py --data-dir ../data --output-dir outputs
+```
+
+To refit the three ensembles on all labels instead of loading the frozen estimators:
+
+```bash
+python run_submissions.py --data-dir ../data --output-dir outputs --refit-models
+```
+
+## Kaggle setup
+
+Create a public GitHub repository from the contents of this folder. In the notebook, set `REPOSITORY_URL` to its HTTPS clone URL and attach the FDS competition dataset. The notebook needs Internet access to clone GitHub and install pinned packages; if the competition's final execution environment has Internet disabled, configure Kaggle's Dependency Manager before committing the notebook and use its offline package installation workflow.
+
+After running all cells, download each CSV separately from `/kaggle/working/submissions/{c09,v334_highest_mean,v334_r_both}/submission.csv`. Do not submit `component_predictions.csv`.
+
+## Generated outputs
+
+`outputs/` is the local default output directory for prediction with the saved full-training estimators. `outputs_refit/` is the directory used during verification with `--refit-models`. These are generated files, not runtime dependencies; both directories are excluded by `.gitignore` and are not included in this repository payload.
+
+Each recipe writes `submission.csv`, `component_predictions.csv`, and `metadata.json`. The run also writes `run_manifest.json`. Refit models are fitted in memory and do not overwrite the saved model artifacts. The submission labels matched exactly in both local verification runs; component probabilities can differ slightly due to numerical rounding.
+
+`.gitattributes` preserves LF endings for source files and treats model files as binary. The runner verifies the source and model hashes before building features. Submission CSV files use explicit CRLF endings to match the original Windows CSV bytes.
+
+## Provenance and scope
+
+`manifest.json` records source bundle names, the user-selected score labels, feature definitions, all model feature columns and pipeline parameters, model artifacts, and expected output hashes. Model artifacts were fitted on the complete 10,000-row labeled training set. No leaderboard labels or test targets are included. The notebook does not upload submissions.
+
+Legacy feature names and formulas are retained for exact reproduction. In particular, the historical PM2 `p1_status_*` timing columns use P2 snapshots, and the `p2_status_*` timing columns use P1 snapshots. These names are not corrected during reproduction.
