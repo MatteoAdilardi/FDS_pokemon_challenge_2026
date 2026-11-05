@@ -16,7 +16,7 @@ The latest project registry corrects V334 R_BOTH to 0.68933 and assigns 0.698 to
 
 ## What the notebook does
 
-1. Clones this public GitHub repository. Set `REPOSITORY_URL` in the notebook to the URL created for this folder.
+1. Clones the configured public GitHub repository: https://github.com/MatteoAdilardi/FDS_pokemon_challenge_2026.
 2. Finds the attached competition files in `/kaggle/input`.
 3. Installs the pinned Python packages listed in `requirements.txt`.
 4. Rebuilds the exact model-specific feature matrices from the 10,000 labeled training rows and the first 30 visible timeline snapshots of each test battle.
@@ -46,7 +46,7 @@ python run_submissions.py --data-dir ../data --output-dir outputs --refit-models
 
 ## Kaggle setup
 
-Create a public GitHub repository from the contents of this folder. In the notebook, set `REPOSITORY_URL` to its HTTPS clone URL and attach the FDS competition dataset. The notebook needs Internet access to clone GitHub and install pinned packages; if the competition's final execution environment has Internet disabled, configure Kaggle's Dependency Manager before committing the notebook and use its offline package installation workflow.
+Publish the contents of this folder at the root of https://github.com/MatteoAdilardi/FDS_pokemon_challenge_2026. The notebook already sets `REPOSITORY_URL` to its HTTPS clone URL. Attach the FDS competition dataset in Kaggle. The notebook needs Internet access to clone GitHub and install pinned packages; if the competition's final execution environment has Internet disabled, configure Kaggle's Dependency Manager before committing the notebook and use its offline package installation workflow.
 
 After running all cells, download each CSV separately from `/kaggle/working/submissions/{c09,v334_highest_mean,v334_r_both}/submission.csv`. Do not submit `component_predictions.csv`.
 
@@ -57,6 +57,8 @@ After running all cells, download each CSV separately from `/kaggle/working/subm
 Each recipe writes `submission.csv`, `component_predictions.csv`, and `metadata.json`. The run also writes `run_manifest.json`. Refit models are fitted in memory and do not overwrite the saved model artifacts. The submission labels matched exactly in both local verification runs; component probabilities can differ slightly due to numerical rounding.
 
 `.gitattributes` preserves LF endings for source files and treats model files as binary. The runner verifies the source and model hashes before building features. Submission CSV files use explicit CRLF endings to match the original Windows CSV bytes.
+
+Source files are stored with LF line endings before their manifest hashes are computed. After updating this repository, refresh an existing Kaggle clone with `git -C /kaggle/working/fds_selected_submissions pull --ff-only` before rerunning the pipeline. The setup cell skips cloning when that directory already exists.
 
 ## Provenance and scope
 
