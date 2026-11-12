@@ -6,13 +6,15 @@ This folder is a self-contained public repository payload for reproducing the th
 
 All three are equal-weight soft-voting blends of CatBoost, XGBoost, and Logistic Regression. `battle_id` is used only to align output rows and never enters a predictor. Each output has the competition schema `battle_id,player_won`, 5,000 rows, and threshold 0.5.
 
-| Recipe | CatBoost additions | XGBoost additions | Logistic Regression additions | Reported leaderboard score | Model feature counts (Cat / XGB / LR) | Expected CSV SHA-256 |
+| Recipe | CatBoost additions | XGBoost additions | Logistic Regression additions | Reported public score | Model feature counts (Cat / XGB / LR) | Expected CSV SHA-256 |
 |---|---|---|---|---:|---:|---|
 | `c09` | None beyond C09 | None beyond C09 | None beyond C09 | 0.69333 | 80 / 142 / 143 | `4d460eec5d89b503b0133c8b715847bd38d6e33d4602450c91cffcc2c3dfc1a1` |
 | `v334_highest_mean` | F02, F04, N02, N03, N04 | None | F02, N03 | 0.69266 | 86 / 142 / 145 | `327817d8ef0e8b14456578a1de8f92e077d98231747f8200ad632422abf6bcd4` |
-| `v334_r_both` | F02, F04, N02, N03, N04 | F02, N01, N02, N03 | None | 0.68933 (latest project registry) | 86 / 146 / 143 | `f186c18f3e7d957993948a2feb0da0c9de122f3cc41d4f79f47f034c82fc486d` |
+| `v337_cat_f06_pair` | F06 P1+P2 | None | None | 0.69800 | 82 / 142 / 143 | `60965035e9a44563a12c475e0b75db69c6849af0d9c978b8fec41376b982fc66` |
 
-The latest project registry corrects V334 R_BOTH to 0.68933 and assigns 0.698 to the different V337 CatBoost F06 P1+P2 recipe. The original user selection called R_BOTH 0.698; that label is retained separately in the manifest for provenance. This package reproduces the requested R_BOTH recipe and its exact CSV hash. Leaderboard scores are user-reported and have not been independently verified on Kaggle.
+The three CSVs were matched byte-for-byte to the files supplied by the user. Their reported private scores are C09 0.65914, highest mean 0.66457, and V337 0.66285. The final competition ranking uses the private leaderboard. Scores are user-reported, not independently verified on Kaggle. V337 replaces the previously packaged R_BOTH recipe.
+
+F06 adds only `p1_new_faint_names_t21_30` and `p2_new_faint_names_t21_30` to CatBoost C09. For each side, scan snapshots 1–30 and record the first terminal observation for each normalized active name (`status == "fnt"` or finite `hp_pct <= 0`). Count names whose first such observation falls in turns 21–30 inclusive. Repeated terminal snapshots count once; a name first terminal before turn 21 is excluded. These are observed names, not inferred hidden KOs or guaranteed individual identities. XGBoost and LR remain C09.
 
 ## What the notebook does
 
@@ -48,7 +50,7 @@ python run_submissions.py --data-dir ../data --output-dir outputs --refit-models
 
 Publish the contents of this folder at the root of https://github.com/MatteoAdilardi/FDS_pokemon_challenge_2026. The notebook already sets `REPOSITORY_URL` to its HTTPS clone URL. Attach the FDS competition dataset in Kaggle. The notebook needs Internet access to clone GitHub and install pinned packages; if the competition's final execution environment has Internet disabled, configure Kaggle's Dependency Manager before committing the notebook and use its offline package installation workflow.
 
-After running all cells, download each CSV separately from `/kaggle/working/submissions/{c09,v334_highest_mean,v334_r_both}/submission.csv`. Do not submit `component_predictions.csv`.
+After running all cells, download each CSV separately from `/kaggle/working/submissions/{c09,v334_highest_mean,v337_cat_f06_pair}/submission.csv`. Do not submit `component_predictions.csv`.
 
 ## Generated outputs
 

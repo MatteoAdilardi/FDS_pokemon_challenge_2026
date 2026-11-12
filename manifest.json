@@ -1138,7 +1138,8 @@
             }
           ]
         }
-      }
+      },
+      "reported_private_score": "0.65914"
     },
     "v334_highest_mean": {
       "source_bundle": "goal70_v334_highest_mean_blend_fulltrain_v1",
@@ -1778,40 +1779,59 @@
             }
           ]
         }
-      }
+      },
+      "reported_private_score": "0.66457"
     },
-    "v334_r_both": {
-      "source_bundle": "goal70_v334_r_both_fn_fulltrain_v1",
-      "reported_leaderboard_score": "0.68933",
-      "source_oof": null,
+    "v337_cat_f06_pair": {
+      "source_bundle": "goal70_v337_cat_f06_pair_fulltrain_v1",
+      "reported_leaderboard_score": "0.69800",
+      "source_oof": [
+        {
+          "seed": 31415,
+          "recipe": "cat_f06_pair",
+          "correct": 5500,
+          "n": 8000,
+          "accuracy": 0.6875,
+          "delta_correct_vs_c09": 25,
+          "wins_vs_c09": 127,
+          "losses_vs_c09": 102
+        },
+        {
+          "seed": 8675309,
+          "recipe": "cat_f06_pair",
+          "correct": 5457,
+          "n": 8000,
+          "accuracy": 0.682125,
+          "delta_correct_vs_c09": 23,
+          "wins_vs_c09": 145,
+          "losses_vs_c09": 122
+        }
+      ],
       "feature_engineering": {
         "base_recipe": "C09: model-specific base features + PM2 initial six + Submission_2_ENS seven",
         "timeline_window": "snapshots 1 through 30 only",
         "feature_token_definitions": {
-          "F02": [
-            "p2_trailing_status_move_turns"
-          ],
-          "F04": [
-            "move_made_diff_mean_recent10_context"
-          ],
-          "N01": [
-            "p2_unique_active_names_with_nonterminal_status"
-          ],
-          "N02": [
-            "encounter_hp_delta_p2_mean"
-          ],
-          "N03": [
-            "p2_lead_type_fighting"
-          ],
-          "N04": [
-            "p1_no_move_record_run_max_t21_30",
-            "p2_no_move_record_run_max_t21_30"
+          "F06": [
+            "p1_new_faint_names_t21_30",
+            "p2_new_faint_names_t21_30"
           ]
         },
+        "f06_definition": "For each side, count distinct active names whose first observed terminal snapshot (status=fnt or hp_pct<=0) is in turns 21-30.",
         "battle_id": "Output alignment only; excluded from all model feature columns.",
         "component_predictions": "component_predictions.csv"
       },
-      "feature_set": null,
+      "feature_set": {
+        "version": "V337 cat_f06_pair",
+        "base": "C09",
+        "tokens": {
+          "CatBoost": [
+            "F06"
+          ],
+          "XGBoost": [],
+          "LR_C10": []
+        },
+        "description": "CatBoost C09+F06 P1/P2; XGBoost C09; LR C09."
+      },
       "blend": {
         "method": "equal-weight soft probability average",
         "weights": {
@@ -1836,23 +1856,21 @@
         "rows": 5000,
         "target_read_or_used": false
       },
-      "submission_sha256": "f186c18f3e7d957993948a2feb0da0c9de122f3cc41d4f79f47f034c82fc486d",
+      "submission_sha256": "60965035e9a44563a12c475e0b75db69c6849af0d9c978b8fec41376b982fc66",
       "artifacts": {
-        "model-CatBoost.joblib": "05472772d6d60cfc1e2835eb12bbc13634741b14458283fc00e514abac027f68",
+        "model-CatBoost.joblib": "c63191bf4e73362d8542b05f448beddf894c14fad6614440c2fbb39a19a58009",
         "model-LR_C10.joblib": "c578d07a4f5d345f3eee0606258e9304d027affff38a477ad3e139575cdee4b0",
-        "model-XGBoost.joblib": "95fda8bb06d20ef6db314ce08ac955c10feba2b1338fb3f9261452c257f4c4ef"
+        "model-XGBoost.joblib": "6bc10c49e9533f836add53f311ebfc53fcad2fedcc8b678e86ca3932adcff8e6"
       },
       "model_feature_counts": {
-        "CatBoost": 86,
-        "XGBoost": 146,
+        "CatBoost": 82,
+        "XGBoost": 142,
         "LR_C10": 143
       },
-      "score_as_selected_by_user": "0.698",
-      "historical_score_conflict": "The latest project submission registry corrects V334 R_BOTH to 0.68933 and assigns 0.698 to the different V337 CatBoost F06 P1+P2 recipe. The user selected R_BOTH with a 0.698 label; score_as_selected_by_user preserves that request. The reproduced CSV is identified by its R_BOTH SHA-256, not by the disputed score. The same CSV was also reported with 0.684 for V374; platform attribution has not been independently checked.",
       "model_specifications": {
         "CatBoost": {
           "artifact": "model-CatBoost.joblib",
-          "n_features": 86,
+          "n_features": 82,
           "feature_columns": [
             "p1_base_hp_mean",
             "p1_base_hp_min",
@@ -1934,12 +1952,8 @@
             "attacks_rate_diff",
             "substitute_late_share_diff",
             "sleep_streak_max_diff",
-            "p2_trailing_status_move_turns",
-            "move_made_diff_mean_recent10_context",
-            "encounter_hp_delta_p2_mean",
-            "p2_lead_type_fighting",
-            "p1_no_move_record_run_max_t21_30",
-            "p2_no_move_record_run_max_t21_30"
+            "p1_new_faint_names_t21_30",
+            "p2_new_faint_names_t21_30"
           ],
           "pipeline_steps": [
             {
@@ -2164,7 +2178,7 @@
         },
         "XGBoost": {
           "artifact": "model-XGBoost.joblib",
-          "n_features": 146,
+          "n_features": 142,
           "feature_columns": [
             "p1_base_hp_mean",
             "p1_base_hp_min",
@@ -2307,11 +2321,7 @@
             "hp_gap_sign_flips",
             "attacks_rate_diff",
             "substitute_late_share_diff",
-            "sleep_streak_max_diff",
-            "p2_trailing_status_move_turns",
-            "p2_unique_active_names_with_nonterminal_status",
-            "encounter_hp_delta_p2_mean",
-            "p2_lead_type_fighting"
+            "sleep_streak_max_diff"
           ],
           "pipeline_steps": [
             {
@@ -2374,7 +2384,8 @@
             }
           ]
         }
-      }
+      },
+      "reported_private_score": "0.66285"
     }
   },
   "source_modules": [
@@ -2402,14 +2413,14 @@
     "expected_output_hashes": {
       "c09": "4d460eec5d89b503b0133c8b715847bd38d6e33d4602450c91cffcc2c3dfc1a1",
       "v334_highest_mean": "327817d8ef0e8b14456578a1de8f92e077d98231747f8200ad632422abf6bcd4",
-      "v334_r_both": "f186c18f3e7d957993948a2feb0da0c9de122f3cc41d4f79f47f034c82fc486d"
+      "v337_cat_f06_pair": "60965035e9a44563a12c475e0b75db69c6849af0d9c978b8fec41376b982fc66"
     },
     "format": "battle_id,player_won; 5000 rows; CRLF; UTF-8; no index"
   },
   "source_sha256": {
     "personal_model_2/__init__.py": "41932eecdd0b4e729bb4a68046e5b2b75a3a694a5b4adb95d3e937862661afb6",
     "personal_model_2/features.py": "2383928684f4112b5a59d30520fbdc2552c00d1256c6d81427ea7abfdb694ca2",
-    "run_submissions.py": "44ead8381076f10a46389a575b98ed9617bd19f4ad75915918497dafed47eee5",
+    "run_submissions.py": "43f22a2fb56bd1c5d950b0652e11b7651a3bfa3f93e9648021f19b471baa9e8d",
     "src/__init__.py": "41932eecdd0b4e729bb4a68046e5b2b75a3a694a5b4adb95d3e937862661afb6",
     "src/goal70_c09_candidate_features_v332.py": "5eedc3a3a9ac26408572881edce98536c34a1781c0508bde7658d5341ff30953",
     "src/goal70_species_hp_v34.py": "b967e053bac92ce5ee809cf6a40ae6881d4c3b376c853be1dd734663e701c81a",

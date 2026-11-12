@@ -23,9 +23,9 @@ RECIPES = {
         "XGBoost": (),
         "LR_C10": ("F02", "N03"),
     },
-    "v334_r_both": {
-        "CatBoost": ("F02", "F04", "N02", "N03", "N04"),
-        "XGBoost": ("F02", "N01", "N02", "N03"),
+    "v337_cat_f06_pair": {
+        "CatBoost": ("F06",),
+        "XGBoost": (),
         "LR_C10": (),
     },
 }
@@ -58,7 +58,6 @@ def feature_designs(train, test):
     from src.goal70_c09_candidate_features_v332 import _recent_move_difference
     from src.goal70_user_feature_code_v330 import extract_user_features
     from src.projectbaseline_cycle190_status_move_streak import move_recency_features
-    from src.refit_goal70_pm2_submission2_all13_v1 import statused_active_names
 
     train_ids = np.asarray([int(row["battle_id"]) for row in train], dtype=int)
     test_ids = np.asarray([int(row["battle_id"]) for row in test], dtype=int)
@@ -71,6 +70,28 @@ def feature_designs(train, test):
     train_base = {name: train_base[key] for name, key in key_map.items()}
     test_base = {name: test_base[key] for name, key in key_map.items()}
 
+    def f06_features(record):
+        timeline = (record.get("battle_timeline") or [])[:30]
+        if [turn.get("turn") for turn in timeline] != list(range(1, 31)):
+            raise ValueError("F06 requires ordered timeline snapshots 1..30")
+        result = {}
+        for side in ("p1", "p2"):
+            first_terminal = {}
+            for turn in timeline:
+                state = turn.get(f"{side}_pokemon_state") or {}
+                name = str(state.get("name") or "").strip().lower()
+                status = str(state.get("status") or "").strip().lower()
+                try:
+                    hp = float(state.get("hp_pct"))
+                except (TypeError, ValueError):
+                    hp = np.nan
+                if name and (status == "fnt" or (np.isfinite(hp) and hp <= 0)):
+                    first_terminal.setdefault(name, int(turn["turn"]))
+            result[f"{side}_new_faint_names_t21_30"] = sum(
+                21 <= turn <= 30 for turn in first_terminal.values()
+            )
+        return result
+
     def candidate_frames(records):
         streaks = pd.DataFrame([move_recency_features(row)[0] for row in records])
         recent = pd.DataFrame({
@@ -79,7 +100,6 @@ def feature_designs(train, test):
             ]
         })
         user = pd.DataFrame([extract_user_features(row) for row in records])
-        status = statused_active_names(records)
 
         def max_run(values):
             best = current = 0
@@ -103,7 +123,7 @@ def feature_designs(train, test):
         candidates = {
             "F02": streaks[["p2_trailing_status_move_turns"]],
             "F04": recent,
-            "N01": status[["p2_unique_active_names_with_nonterminal_status"]],
+            "F06": pd.DataFrame([f06_features(row) for row in records]),
             "N02": user[["encounter_hp_delta_p2_mean"]],
             "N03": user[["p2_lead_type_fighting"]],
             "N04": tail,
@@ -117,7 +137,7 @@ def feature_designs(train, test):
     test_candidates = candidate_frames(test)
     train_designs = {"c09": train_base}
     test_designs = {"c09": test_base}
-    for recipe_id in ("v334_highest_mean", "v334_r_both"):
+    for recipe_id in ("v334_highest_mean", "v337_cat_f06_pair"):
         for base, candidates, designs in (
             (train_base, train_candidates, train_designs),
             (test_base, test_candidates, test_designs),
