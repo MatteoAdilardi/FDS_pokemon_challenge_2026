@@ -16,6 +16,12 @@ The three CSVs were matched byte-for-byte to the files supplied by the user. The
 
 F06 adds only `p1_new_faint_names_t21_30` and `p2_new_faint_names_t21_30` to CatBoost C09. For each side, scan snapshots 1–30 and record the first terminal observation for each normalized active name (`status == "fnt"` or finite `hp_pct <= 0`). Count names whose first such observation falls in turns 21–30 inclusive. Repeated terminal snapshots count once; a name first terminal before turn 21 is excluded. These are observed names, not inferred hidden KOs or guaranteed individual identities. XGBoost and LR remain C09.
 
+## One complete notebook: EDA, models and submissions
+
+`submission_reproduction.ipynb` is the single complete notebook to import into Kaggle. It recomputes training-only checks and three charts (active HP trajectories, null move cards by active-name change, first terminal observations by window), explains the exact selected features and historical validation, separates public/private scores, and invokes the same runner to reproduce C09, highest mean and V337. It includes both the explanatory walkthrough and exact submission generation.
+
+Install the optional plotting environment with `python -m pip install -r requirements-notebook.txt`. The walkthrough finds the package from the current `to_kaggle` or project directory, and defaults to `../data`. On Kaggle it clones the public payload and installs these requirements. Outputs go under `outputs/eda_walkthrough/` locally or `/kaggle/working/eda_walkthrough/` on Kaggle, including three plots and `submissions/{recipe}/submission.csv`. `REFIT_MODELS=False` is the default; no feature search or new OOF evaluation is performed. The original model-runtime requirements are unchanged.
+
 ## What the notebook does
 
 1. Clones the configured public GitHub repository: https://github.com/MatteoAdilardi/FDS_pokemon_challenge_2026.
@@ -50,7 +56,7 @@ python run_submissions.py --data-dir ../data --output-dir outputs --refit-models
 
 Publish the contents of this folder at the root of https://github.com/MatteoAdilardi/FDS_pokemon_challenge_2026. The notebook already sets `REPOSITORY_URL` to its HTTPS clone URL. Attach the FDS competition dataset in Kaggle. The notebook needs Internet access to clone GitHub and install pinned packages; if the competition's final execution environment has Internet disabled, configure Kaggle's Dependency Manager before committing the notebook and use its offline package installation workflow.
 
-After running all cells, download each CSV separately from `/kaggle/working/submissions/{c09,v334_highest_mean,v337_cat_f06_pair}/submission.csv`. Do not submit `component_predictions.csv`.
+After running all cells, download each CSV separately from `/kaggle/working/eda_walkthrough/submissions/{c09,v334_highest_mean,v337_cat_f06_pair}/submission.csv`. Do not submit `component_predictions.csv`.
 
 ## Generated outputs
 
